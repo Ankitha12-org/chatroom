@@ -32,10 +32,9 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                 sh 'docker build -t $IMAGE_NAME .'
+                sh 'docker build -t $IMAGE_NAME .'
             }
-        } 
-           
+        }
 
         stage('TRIVY IMAGE SCAN') {
             steps {
@@ -44,26 +43,25 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-    steps {
-        withCredentials([string(credentialsId: 'sonar-cred', variable: 'SONAR_TOKEN')]) {
-            withSonarQubeEnv('sonar-server') {
-                sh '''
-                    $SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectKey=chatroom \
-                    -Dsonar.projectName=chatroom \
-                    -Dsonar.sources=. \
-                    -Dsonar.token=$SONAR_TOKEN
-                '''
+            steps {
+                withCredentials([string(credentialsId: 'sonar-cred', variable: 'SONAR_TOKEN')]) {
+                    withSonarQubeEnv('sonar-server') {
+                        sh '''#!/bin/bash
+                            $SCANNER_HOME/bin/sonar-scanner \
+                            -Dsonar.projectKey=chatroom \
+                            -Dsonar.projectName=chatroom \
+                            -Dsonar.sources=. \
+                            -Dsonar.token=$SONAR_TOKEN
+                        '''
+                    }
+                }
             }
         }
-    }
-}
-
 
         stage('OWASP Dependency Check') {
             steps {
                 withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
-                    dependencyCheck additionalArguments: "--scan ./ --disableYarnAudit --disableNodeAudit --nvdApiKey=${NVD_API_KEY}", odcInstallation: 'DP-Check'
+                    dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit --nvdApiKey=' + NVD_API_KEY, odcInstallation: 'DP-Check'
                 }
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
