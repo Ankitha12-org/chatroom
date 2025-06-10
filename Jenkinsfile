@@ -44,17 +44,21 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonar-server') {
-                    sh '''
-                        $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectKey=chatroom \
-                        -Dsonar.projectName=chatroom \
-                        -Dsonar.sources=.
-                    '''
-                }
+    steps {
+        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+            withSonarQubeEnv('sonar-server') {
+                sh '''
+                    $SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectKey=chatroom \
+                    -Dsonar.projectName=chatroom \
+                    -Dsonar.sources=. \
+                    -Dsonar.token=$SONAR_TOKEN
+                '''
             }
         }
+    }
+}
+
 
         stage('OWASP Dependency Check') {
             steps {
