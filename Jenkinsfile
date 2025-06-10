@@ -32,13 +32,19 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh "docker build -t $IMAGE_NAME ."
+                script {
+                    if (fileExists('Dockerfile')) {
+                        sh "docker build -t $IMAGE_NAME ."
+                    } else {
+                        error "Dockerfile not found in workspace"
+                    }
+                }
             }
         }
 
         stage('TRIVY IMAGE SCAN') {
             steps {
-                sh "trivy image $IMAGE_NAME > trivyimage.txt"
+                sh "trivy image $IMAGE_NAME | tee trivyimage.txt"
             }
         }
 
