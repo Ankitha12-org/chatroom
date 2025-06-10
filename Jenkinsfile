@@ -31,16 +31,13 @@ pipeline {
         }
 
         stage('Docker Build') {
-            steps {
-                script {
-                    if (fileExists('Dockerfile')) {
-                        sh "docker build -t $IMAGE_NAME ."
-                    } else {
-                        error "Dockerfile not found in workspace"
-                    }
-                }
-            }
-        }
+           steps {
+             script {
+                withDockerRegistry(credentialsId: 'docker-cred') {
+                        sh 'docker build --build-arg TMDB_V3_API_KEY=$TMDB_V3_API_KEY -t $IMAGE_NAME .'
+                        sh 'docker push $IMAGE_NAME'
+             }
+           }
 
         stage('TRIVY IMAGE SCAN') {
             steps {
