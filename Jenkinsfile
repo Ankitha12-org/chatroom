@@ -32,14 +32,14 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                 sh 'docker build -t ankii1212/chatroom-application:latest .'
+                 sh 'docker build -t $IMAGE_NAME .'
             }
         } 
            
 
         stage('TRIVY IMAGE SCAN') {
             steps {
-                sh "trivy image $IMAGE_NAME | tee trivyimage.txt"
+                sh 'trivy image -o trivy-image-result.html $IMAGE_NAME'
             }
         }
 
