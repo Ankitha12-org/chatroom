@@ -31,13 +31,11 @@ pipeline {
         }
 
         stage('Docker Build') {
-           steps {
-             script {
-                withDockerRegistry(credentialsId: 'docker-cred') {
-                        sh 'docker build --build-arg TMDB_V3_API_KEY=$TMDB_V3_API_KEY -t $IMAGE_NAME .'
-                        sh 'docker push $IMAGE_NAME'
-             }
-           }
+            steps {
+                 sh 'docker build -t ankii1212/chatroom-application:${BUILD_NUMBER} .'
+            }
+        } 
+           
 
         stage('TRIVY IMAGE SCAN') {
             steps {
