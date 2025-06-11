@@ -102,6 +102,23 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to ec2'){
+            steps {
+                sshagent(['ssh-key']) {
+                    withAWS(credentials: 'aws-cred', region: 'us-east-1') {
+                        sh ''' 
+                            ssh -o StrictHostKeyChecking=no ubuntu@3.89.36.80 "
+                                docker stop chatroom-app || true
+                                docker rm chatroom-app || true
+                                docker rmi $(docker images -q) || true
+                            
+                                docker run --rm -itd --name chatroom-app -p 8080:8080 $IMAGE_NAME
+                            "
+                        '''    
+                    }
+                }
+            }
+        }
     }
     post{
         always{
