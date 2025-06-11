@@ -23,25 +23,24 @@ pipeline {
                 sh 'mvn clean compile -DskipTests'
             }
         }
-
         stage('Package') {
             steps {
                 sh 'mvn package -DskipTests'
             }
         }
-
-        stage('Docker Build') {
-            steps {
-                sh 'docker build -t $IMAGE_NAME .'
+        stage('trivy file scan'){
+            steps{
+                sh 'trivy fs ----severity HIGH,CRITICAL -o trivy-fs-result.html .'
             }
         }
-
-        stage('TRIVY IMAGE SCAN') {
+        stage('OWASP Dependency Check') {
             steps {
-                sh 'trivy image -o trivy-image-result.html $IMAGE_NAME'
+                withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
+                    dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit --nvdApiKey=' + NVD_API_KEY, odcInstallation: 'DP-Check'
+                }
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
-
         stage('SonarQube Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'sonar-cred', variable: 'SONAR_TOKEN')]) {
@@ -57,13 +56,15 @@ pipeline {
                 }
             }
         }
-
-        stage('OWASP Dependency Check') {
+        stage('Docker Build') {
             steps {
-                withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
-                    dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit --nvdApiKey=' + NVD_API_KEY, odcInstallation: 'DP-Check'
-                }
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
+
+        stage('TRIVY IMAGE SCAN') {
+            steps {
+                sh 'trivy image -o trivy-image-result.html $IMAGE_NAME'
             }
         }
     }
