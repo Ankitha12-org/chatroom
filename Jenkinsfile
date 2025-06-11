@@ -63,6 +63,13 @@ pipeline {
                 }
             }
         }
+        stage('Sonarqube Quality Gate'){
+            steps{
+                timeout(time: 60, unit: 'SECONDS') {
+                    waitForQualityGate abortPipeline: true, credentialsId: 'sonar-cred'
+                }
+            }
+        }
         stage('Docker Build') {
             steps {
                 sh 'docker build -t $IMAGE_NAME .'
