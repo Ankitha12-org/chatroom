@@ -75,4 +75,9 @@ pipeline {
             }
         }
     }
+    post{
+        always{
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: './', reportFiles: 'trivy-fs-result.html', reportName: 'trivy fs HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+        }
+    }
 }
