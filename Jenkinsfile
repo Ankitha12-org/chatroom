@@ -94,6 +94,14 @@ pipeline {
                 }
             }
         }
+         stage('Docker Push') {
+            steps {
+                withDockerRegistry(credentialsId: 'docker-cred', url: 'https://index.docker.io/v1/') {
+                    sh 'echo $IMAGE_NAME'
+                    sh 'docker push $IMAGE_NAME'
+                }
+            }
+        }
     }
     post{
         always{
@@ -101,5 +109,5 @@ pipeline {
 
             publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: './', reportFiles: 'trivy-image-result.html', reportName: 'trivy image HTML Report', reportTitles: '', useWrapperFileDirectly: true])
         }
-    }
+    }  
 }
