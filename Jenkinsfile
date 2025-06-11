@@ -57,7 +57,6 @@ pipeline {
                             -Dsonar.projectKey=chatroom \
                             -Dsonar.projectName=chatroom \
                             -Dsonar.sources=. \
-                            -Dsonar.token=$SONAR_TOKEN
                         '''
                     }
                 }
@@ -78,13 +77,22 @@ pipeline {
 
         stage('TRIVY IMAGE SCAN') {
             steps {
-                sh 'trivy image -o trivy-image-result.html $IMAGE_NAME'
+                sh 'trivy image --format json -o trivy-image-result.json $IMAGE_NAME'
+            }
+            post{
+                always{
+                    sh ''' trivy convert \
+                    --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
+                    -o trivy-image-result.html trivy-image-result.json '''
+                }
             }
         }
     }
     post{
         always{
             publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: './', reportFiles: 'trivy-fs-result.html', reportName: 'trivy fs HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: './', reportFiles: 'trivy-image-result.html', reportName: 'trivy image HTML Report', reportTitles: '', useWrapperFileDirectly: true])
         }
     }
 }
