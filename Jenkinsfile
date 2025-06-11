@@ -107,7 +107,7 @@ pipeline {
                 sshagent(['ssh-key']) {
                     withAWS(credentials: 'aws-cred', region: 'us-east-1') {
                         sh ''' 
-                            ssh -o StrictHostKeyChecking=no ubuntu@3.89.36.80 "
+                            ssh -o StrictHostKeyChecking=no ubuntu@3.91.186.148 "
                                 docker stop chatroom-app || true
                                 docker rm chatroom-app || true
                                 docker rmi $(docker images -q) || true
