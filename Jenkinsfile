@@ -69,6 +69,13 @@ pipeline {
                 }
             }
         }
+        stage('Nexus Artifactory'){
+            steps{
+                withMaven(globalMavenSettingsConfig: 'maven', jdk: '', maven: 'maven', mavenSettingsConfig: '', traceability: true) {
+                    sh 'mvn deploy -DskipTests'
+                }
+            }
+        }
         stage('Docker Build') {
             steps {
                 sh 'docker build -t $IMAGE_NAME .'
