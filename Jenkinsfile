@@ -30,7 +30,14 @@ pipeline {
         }
         stage('trivy file scan'){
             steps{
-                sh 'trivy fs --severity HIGH,CRITICAL -o trivy-fs-result.html .'
+                sh 'trivy fs --severity HIGH,CRITICAL --format json -o trivy-fs-result.json .'
+            }
+            post{
+                always{
+                    sh ''' trivy convert \
+                    --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
+                    -o trivy-fs-result.html trivy-fs-result.json '''
+                }
             }
         }
         stage('OWASP Dependency Check') {
